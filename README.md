@@ -1,7 +1,7 @@
 ## MSFC: Multi-Source Feature Contrast network for weakly-supervised semantic segmentation
 
 <br>
-  <img width="100%" alt="AFA flowchart" src="./docs/frame.pdf">
+  <img width="100%" alt="frame" src="./docs/frame.png">
 </div>
 
 
