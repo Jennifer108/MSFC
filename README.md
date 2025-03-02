@@ -1,0 +1,9 @@
+## MSFC: Multi-Source Feature Contrast network for weakly-supervised semantic segmentation
+
+<br>
+  <img width="100%" alt="AFA flowchart" src="./docs/frame.png">
+</div>
+
+
+Weakly-Supervised Semantic Segmentation (WSSS) with image-level labels generally aims to leverage Class Activation Map (CAM) to generate pixel-level pseudo labels for guiding object segmentation. With the development of Vision Transformer (ViT), recent ViT-based methods have emerged to capture the global context for CAM optimization through the self-attention mechanism. However, constrained by the inherent semantic features in the image, this strategy can only extract limited supervised information, resulting in coarse segmentation performance. To address this issue, we propose a Multi-Source Feature Contrast (MSFC) network to fully mine sufficient supervised information from multiple sources, including token correlations, spatial correlations, and historical correlations, for achieving accurate WSSS. Specifically, based on the token mechanism of ViT, we introduce a Token Feature Contrast Module (TFCM), which employs patch-level token contrast strategy and class-level token contrast strategy to explore token correlations for effectively activating CAM regions. Next, a Spatial Multi-view Contrast Module (SMCM) is designed to learn self-supervised information for improving the CAM details by the spatial correlations of multi-view images obtained through data augmentation. In addition, a Memory Prototype Matching Module (MP2M) is proposed to fully explore the historical correlations for refining CAM based on the updatable memory bank, and an adaptive memory contrast loss is introduced to further enhance its performance. Finally, the optimized CAM is fully utilized to generate accurate pseudo labels for guiding effective object segmentation. Extensive experiments on the PASCAL VOC
+2012 and MS COCO datasets demonstrate the superiority of the proposed method.
