@@ -1,6 +1,3 @@
-###
-#local pixel refinement
-###
 
 import torch
 import torch.nn as nn

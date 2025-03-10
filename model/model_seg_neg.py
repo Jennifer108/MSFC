@@ -4,9 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from . import backbone as encoder
 from . import decoder
-"""
-Borrow from https://github.com/facebookresearch/dino
-"""
+
 class CTCHead(nn.Module):
     def __init__(self, in_dim, out_dim=4096, norm_last_layer=True, nlayers=3, hidden_dim=2048, bottleneck_dim=256):
         super().__init__()
@@ -36,7 +34,7 @@ class CTCHead(nn.Module):
                 nn.init.constant_(m.bias, 0) 
 
     def forward(self, x):
-        x = self.mlp(x)# 前向传播，经过MLP
+        x = self.mlp(x)
         x = nn.functional.normalize(x, dim=-1, p=2)
         x = self.last_layer(x)
         return x

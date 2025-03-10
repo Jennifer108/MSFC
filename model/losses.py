@@ -66,20 +66,10 @@ class CTCLoss_neg(nn.Module):
     def __init__(self, ncrops=10, temp=1.0,):
         super().__init__()
         self.temp = temp
-        # self.center_momentum = center_momentum
         self.ncrops = ncrops
-        # self.register_buffer("center", torch.zeros(1, out_dim))
-        # we apply a warm up for the teacher temperature because
-        # a too high temperature makes the training instable at the beginning
-        # self.teacher_temp_schedule = np.concatenate((
-        #     np.linspace(warmup_teacher_temp, teacher_temp, warmup_teacher_temp_epochs),
-        #     np.ones(nepochs - warmup_teacher_temp_epochs) * teacher_temp
-        # ))
 
     def forward(self, student_output, teacher_output, flags):
-        """
-        Cross-entropy between softmax outputs of the teacher and student networks.
-        """
+        
 
         b = flags.shape[0] 
 
