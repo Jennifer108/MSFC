@@ -29,7 +29,7 @@ def cam_to_label(cam, cls_label, img_box=None, bkg_thre=None, high_thre=None, lo
 
 
 def cam_to_label2(cam, cls_label, img_box=None, bkg_thre=None, high_thre=None, low_thre=None, ignore_mid=False, ignore_index=None):
-    b, c, h, w = cam.shape# 获取CAM的形状信息
+    b, c, h, w = cam.shape
     
     cls_label_rep = cls_label.unsqueeze(-1).unsqueeze(-1).repeat([1,1,h,w])
     valid_cam = cls_label_rep * cam  
@@ -248,10 +248,8 @@ def multi_scale_cam4(model, inputs, scales):
 
         _cam_aux, _cam, _x4 = model(inputs_cat, protype=True)
 
-       
-        # _cam = F.interpolate(_cam, size=(h,w), mode='bilinear', align_corners=False)
         _cam = torch.max(_cam[:b,...], _cam[b:,...].flip(-1))
-        # _cam_aux = F.interpolate(_cam_aux, size=(h,w), mode='bilinear', align_corners=False)
+    
         _cam_aux = torch.max(_cam_aux[:b,...], _cam_aux[b:,...].flip(-1))
 
        
@@ -260,15 +258,12 @@ def multi_scale_cam4(model, inputs, scales):
 
         for s in scales:
             if s != 1.0:
-                # inputs = F.interpolate(inputs, size=(int(s*h), int(s*w)), mode='bilinear', align_corners=False)
                 inputs_cat = torch.cat([inputs, inputs.flip(-1)], dim=0)
 
                 _cam_aux, _cam = model(inputs_cat, cam_only=True)
 
-             
-                # _cam = F.interpolate(_cam, size=(h,w), mode='bilinear', align_corners=False)
                 _cam = torch.max(_cam[:b,...], _cam[b:,...].flip(-1))
-                # _cam_aux = F.interpolate(_cam_aux, size=(h,w), mode='bilinear', align_corners=False)
+
                 _cam_aux = torch.max(_cam_aux[:b,...], _cam_aux[b:,...].flip(-1))
 
               

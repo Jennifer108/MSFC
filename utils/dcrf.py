@@ -4,9 +4,8 @@ import pydensecrf.utils as utils
 import numpy as np
 import torch.nn.functional as F
 
-def crf_inference(img, probs, t=10, scale_factor=1, labels=6):
-# def crf_inference(img, probs, t=10, scale_factor=1, labels=2):
-# def crf_inference(img, probs, t=10, scale_factor=1, labels=21):
+
+def crf_inference(img, probs, t=10, scale_factor=1, labels=21):
 
     h, w = img.shape[:2]
     n_labels = labels
@@ -25,9 +24,8 @@ def crf_inference(img, probs, t=10, scale_factor=1, labels=6):
 
     return np.array(Q).reshape((n_labels, h, w))
 
-def crf_inference_label(img, labels, t=10, n_labels=6, gt_prob=0.7):
-# def crf_inference_label(img, labels, t=10, n_labels=2, gt_prob=0.7):
-# def crf_inference_label(img, labels, t=10, n_labels=21, gt_prob=0.7):
+
+def crf_inference_label(img, labels, t=10, n_labels=21, gt_prob=0.7):
     h, w = img.shape[:2]
 
     d = dcrf.DenseCRF2D(w, h, n_labels)

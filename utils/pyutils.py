@@ -6,17 +6,12 @@ from texttable import Texttable
 def format_tabs(scores, name_list, cat_list=None):
 
     _keys = list(scores[0]['iou'].keys())
-    # print("_key================================")
-    # print(_keys)
     _values = []
 
     for i in range(len(name_list)):
         _values.append(list(scores[i]['iou'].values()))
 
     _values = np.array(_values) * 100
-    # print("_values================================")
-    # print(_values)
-    # print(cat_list)
 
 
     t = Texttable()
@@ -27,14 +22,12 @@ def format_tabs(scores, name_list, cat_list=None):
     
     t.add_row(["mIoU"] + list(_values.mean(1)))
 
-    # t.add_row(["mIoU2"] + list(np.mean(_values[1:6], axis=0)))
+
 
 
     return t.draw()
 
 def setup_logger(filename='test.log'):
-    ## setup logger
-    #logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s - %(levelname)s: %(message)s') 
     logFormatter = logging.Formatter('%(asctime)s - %(filename)s - %(levelname)s: %(message)s')
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -50,7 +43,6 @@ def setup_logger(filename='test.log'):
 def cal_eta(time0, cur_iter, total_iter):
     time_now = datetime.datetime.now()
     time_now = time_now.replace(microsecond=0)
-    #time_now = datetime.datetime.strptime(time_now.strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
 
     scale = (total_iter-cur_iter) / float(cur_iter)
     delta = (time_now - time0)

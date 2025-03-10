@@ -2,10 +2,6 @@ import numpy as np
 import sklearn.metrics as metrics
 
 def multilabel_score(y_true, y_pred):
-    # print("''''''''''''''''''''''''''''''''")
-    # print(len(y_true))
-    # print(len(y_pred))
-    # print("''''''''''''''''''''''''''''''''")
     return metrics.f1_score(y_true, y_pred,average='binary',zero_division=0)
 
 
@@ -17,7 +13,7 @@ def _fast_hist(label_true, label_pred, num_classes):
     )
     return hist.reshape(num_classes, num_classes)
 
-# def scores(label_trues, label_preds, num_classes=2):
+
 def scores(label_trues, label_preds, num_classes=21):
     hist = np.zeros((num_classes, num_classes))
     for lt, lp in zip(label_trues, label_preds):
@@ -38,8 +34,7 @@ def scores(label_trues, label_preds, num_classes=21):
         "iou": cls_iu,
     }
 
-# def pseudo_scores(label_trues, label_preds, num_classes=2):
-# def pseudo_scores(label_trues, label_preds, num_classes=6):
+
 def pseudo_scores(label_trues, label_preds, num_classes=21):
     hist = np.zeros((num_classes, num_classes))
     for lt, lp in zip(label_trues, label_preds):

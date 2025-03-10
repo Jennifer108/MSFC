@@ -16,7 +16,6 @@ class CosWarmupAdamW(torch.optim.AdamW):
         self.__init_lr = [group['lr'] for group in self.param_groups]
 
     def step(self, closure=None):
-        ## adjust lr
         if self.global_step < self.warmup_iter:
 
             lr_mult = self.global_step / self.warmup_iter
@@ -30,7 +29,6 @@ class CosWarmupAdamW(torch.optim.AdamW):
             for i in range(len(self.param_groups)):
                 self.param_groups[i]['lr'] = self.__init_lr[i] * lr_mult
 
-        # step
         super().step(closure)
 
         self.global_step += 1
@@ -49,7 +47,7 @@ class PolyWarmupAdamW(torch.optim.AdamW):
         self.__init_lr = [group['lr'] for group in self.param_groups]
 
     def step(self, closure=None):
-        ## adjust lr
+
         if self.global_step < self.warmup_iter:
 
             lr_mult = 1 - (1 - self.global_step / self.warmup_iter) * (1 - self.warmup_ratio)
@@ -62,7 +60,6 @@ class PolyWarmupAdamW(torch.optim.AdamW):
             for i in range(len(self.param_groups)):
                 self.param_groups[i]['lr'] = self.__init_lr[i] * lr_mult
 
-        # step
         super().step(closure)
 
         self.global_step += 1
@@ -81,7 +78,6 @@ class PolyWarmupSGD(torch.optim.SGD):
         self.__init_lr = [group['lr'] for group in self.param_groups]
 
     def step(self, closure=None):
-        ## adjust lr
         if self.global_step < self.warmup_iter:
 
             lr_mult = (1 - self.global_step / self.warmup_iter) ** self.power
@@ -94,7 +90,6 @@ class PolyWarmupSGD(torch.optim.SGD):
             for i in range(len(self.param_groups)):
                 self.param_groups[i]['lr'] = self.__init_lr[i] * lr_mult
 
-        # step
         super().step(closure)
 
         self.global_step += 1
