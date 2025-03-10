@@ -11,6 +11,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 import ot
 import imageio
+import cv2
 
 sys.path.append(".")
 
@@ -31,10 +32,6 @@ from utils.camutils import cam_to_label,cam_to_label2, cam_to_roi_mask2, multi_s
 from utils.pyutils import AverageMeter, cal_eta, format_tabs, setup_logger
 from utils.camutils import  get_valid_cam,multi_scale_cam3,multi_scale_cam4
 
-import os
-import cv2
-
-
 os.environ['RANK'] = '0' 
 os.environ['WORLD_SIZE'] = '1'
 os.environ['MASTER_ADDR'] = 'localhost'
@@ -42,8 +39,6 @@ os.environ['MASTER_PORT'] = '12355'
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 color_map = plt.get_cmap("jet")
-
-
 
 torch.hub.set_dir("./pretrained")
 parser = argparse.ArgumentParser()
@@ -61,10 +56,8 @@ parser.add_argument("--ignore_index", default=255, type=int, help="random index"
 
 parser.add_argument("--work_dir", default="work_dir_voc_vit", type=str, help="work_dir_voc_wseg")
 
-
 parser.add_argument("--train_set", default="train_aug", type=str, help="training split")
 parser.add_argument("--val_set", default="val", type=str, help="validation split")
-
 
 parser.add_argument("--spg", default=1, type=int, help="samples_per_gpu")
 parser.add_argument("--scales", default=(0.5, 2), help="random rescale in training")
@@ -136,7 +129,6 @@ def validate(model=None, data_loader=None, args=None):
             cls, segs, _, _ = model(inputs,) 
             cls_pred = (cls>0).type(torch.int16)
 
-
             _f1 = evaluate.multilabel_score(cls_label.cpu().numpy()[0], cls_pred.cpu().numpy()[0])
             avg_meter.add({"cls_score": _f1}) 
 
@@ -158,19 +150,13 @@ def validate(model=None, data_loader=None, args=None):
             gts += list(labels.cpu().numpy().astype(np.int16))
             cams_aux += list(cam_label_aux.cpu().numpy().astype(np.int16))
 
-
-
     cls_score = avg_meter.pop('cls_score') 
     seg_score = evaluate.scores(gts, preds,num_classes=21) 
     cam_score = evaluate.scores(gts, cams,num_classes=21) 
     cam_aux_score = evaluate.scores(gts, cams_aux,num_classes=21) 
     model.train()
-
     tab_results = format_tabs([cam_score, cam_aux_score, seg_score], name_list=["CAM", "aux_CAM", "Seg_Pred"], cat_list=voc.class_list)
-
     return cls_score, tab_results
-
-
 
 def train(args=None):
 
@@ -180,7 +166,6 @@ def train(args=None):
 
     time0 = datetime.datetime.now() 
     time0 = time0.replace(microsecond=0)
-
     
     train_dataset = voc.VOC12ClsDataset(
         root_dir=args.data_folder,
@@ -233,7 +218,6 @@ def train(args=None):
     )
 
 
-
     data_list = []
     for i in range(20):
         file_path = f"/home/newdisk/fty/LZ/MSFC/MemoryBank-val/{i}.npy"
@@ -242,12 +226,8 @@ def train(args=None):
     ClassMemoryBank=np.vstack(data_list) 
     ClassMemoryBank = torch.from_numpy(ClassMemoryBank).to(device, non_blocking=True)  
 
-   
-
     param_groups = model.get_param_groups()
     model.to(device)
-
-    # cfg.optimizer.learning_rate *= 2
    
     optim = getattr(optimizer, args.optimizer)( 
         params=[
@@ -286,9 +266,6 @@ def train(args=None):
     train_sampler.set_epoch(np.random.randint(args.max_iters))
     train_loader_iter = iter(train_loader)
     avg_meter = AverageMeter() 
-
-
-
    
     loss_layer = DenseEnergyLoss(weight=1e-7, sigma_rgb=15, sigma_xy=100, scale_factor=0.5)
     ncrops = 10
@@ -297,7 +274,6 @@ def train(args=None):
     classNum=20  
     protypeList = [[] for _ in range(classNum)]
     Iterindex=0
-
     
     for n_iter in range(args.max_iters):
 
@@ -314,7 +290,6 @@ def train(args=None):
         inputs_denorm = imutils.denormalize_img2(inputs.clone()) 
         cls_label = cls_label.to(device, non_blocking=True)
 
-
         cams, cams_aux = multi_scale_cam2(model, inputs=inputs, scales=args.cam_scales)
         roi_mask = cam_to_roi_mask2(cams_aux.detach(), cls_label=cls_label, low_thre=args.low_thre, hig_thre=args.high_thre) 
         local_crops, flags = crop_from_roi_neg(images=crops[2], roi_mask=roi_mask, crop_num=ncrops-2, crop_size=args.local_crop_size)
@@ -322,14 +297,11 @@ def train(args=None):
 
         cls, segs, fmap, cls_aux, out_t, out_s,cam = model(inputs, crops=roi_crops, n_iter=n_iter) 
 
-
-
         resized_cam = get_valid_cam(cams, cls_label)
         cam_np = torch.max(resized_cam[0], dim=0)[0].cpu().numpy()
         cam_rgb = color_map(cam_np)[:,:,:3] * 255
         imageio.imsave("orincams"+'.png', cam_rgb.astype(np.uint8))
 
-       
         multiImg[0] = multiImg[0].to(device, non_blocking=True)
         multiImg[1] = multiImg[1].to(device, non_blocking=True)
         multiImg[2] = multiImg[2].to(device, non_blocking=True)
@@ -344,19 +316,15 @@ def train(args=None):
         CropsCam3, cams_aux1 = multi_scale_cam1(model, inputs=multiImg[4], scales=args.cam_scales)
         CropsCam4, cams_aux1 = multi_scale_cam1(model, inputs=multiImg[5], scales=args.cam_scales)
 
-
-
         SizeCam = F.interpolate(SizeCam, size=(AngleCam.shape[2], AngleCam.shape[3]), mode='bilinear', align_corners=False)
         AngleCam = torch.flip(AngleCam, [2, 3])
         output1 = torch.cat([CropsCam1, CropsCam3], dim=2)
         output2 = torch.cat([CropsCam2, CropsCam4], dim=2)
         CropsCam = torch.cat([output1, output2], dim=3)
 
-
         SizeCam = F.normalize(SizeCam.unsqueeze(0), p=2, dim=1)
         AngleCam = F.normalize(AngleCam.unsqueeze(0), p=2, dim=1)
         CropsCam = F.normalize(AngleCam, p=2, dim=1)
-
 
         target_error1 = torch.mean(torch.abs(SizeCam-AngleCam))
         target_error2 = torch.mean(torch.abs(SizeCam-CropsCam))
@@ -366,12 +334,9 @@ def train(args=None):
         target_error6 = torch.mean(torch.abs(AngleCam-cams))
         target_error_loss=(target_error1+target_error2+target_error3+target_error4+target_error5+target_error6)/6
 
-
-      
         Pcam_label = cam_to_label(cams, cls_label, ignore_mid=True,bkg_thre=args.bkg_thre, high_thre=args.high_thre, low_thre=0.5, ignore_index=args.ignore_index)
         flattened_tensor = torch.flatten(Pcam_label)
         nonzero_elements = torch.unique(flattened_tensor[flattened_tensor != 0])
-
         
         Pfmp=fmap
         ClassMemoryBankBefore=ClassMemoryBank
@@ -385,47 +350,38 @@ def train(args=None):
                 protype=getFeatures(Pfmp,Pcam_labelNew)
                 protypeList[element.item()-1].append(protype)
 
-
         if Iterindex==200:
             Iterindex=0
             for index in range(len(protypeList)):
                 if len(protypeList[index]) != 0:
                     concatenated_tensor = torch.cat(protypeList[index], dim=0)
                     average_tensor = torch.mean(concatenated_tensor, dim=0)
-                    m=0.9  
+                    m=0.1  
                     ClassMemoryBank[index,:]=ClassMemoryBank[index,:]*m+average_tensor.squeeze().square()*(1-m)
                     protypeList = [[] for _ in range(classNum)]
-
        
         cosine_similarity  = F.cosine_similarity(fmap, ClassMemoryBankBefore[..., None, None], dim=1).unsqueeze(0) 
         print("COS")
         print(cosine_similarity.shape)
         
-        
         _, pseudo_label_aux2 = cam_to_label(cosine_similarity.detach(), cls_label=cls_label, img_box=img_box, ignore_mid=True, bkg_thre=args.bkg_thre, high_thre=args.high_thre, low_thre=args.low_thre, ignore_index=args.ignore_index) 
         aff_mask2 = label_to_aff_mask(pseudo_label_aux2)
         MemoryPTC_loss = get_masked_ptc_loss(fmap, aff_mask2)
 
-
-        
         MemoryHTensor1=torch.mean(cosine_similarity, dim=2)  
         MemoryHTensor2=torch.mean(cosine_similarity, dim=3) 
         Memoryresult = torch.cat((MemoryHTensor1, MemoryHTensor2), dim=2)  
-
        
         re_cams_aux = F.interpolate(cams_aux, size=fmap.shape[2:], mode="bilinear", align_corners=False)  
         cams_aux_Tensor1=torch.mean(re_cams_aux, dim=2)  
         cams_aux_Tensor2=torch.mean(re_cams_aux, dim=3)  
         cams_aux_result = torch.cat((cams_aux_Tensor1, cams_aux_Tensor2), dim=2)  
 
-
         re_cams = F.interpolate(cams, size=fmap.shape[2:], mode="bilinear", align_corners=False)  
         cams_Tensor1=torch.mean(re_cams, dim=2)  
         cams_Tensor2=torch.mean(re_cams, dim=3) 
         cams_result = torch.cat((cams_Tensor1, cams_Tensor2), dim=2)  
 
-
-       
         tensor1_flat = Memoryresult.view(1, 20, -1)  
         tensor2_flat = cams_aux_result.view(1, 20, -1)
         tensor3_flat = cams_result.view(1, 20, -1)
@@ -439,43 +395,27 @@ def train(args=None):
         
         similarity = torch.exp(-torch.sum(torch.sqrt(hist1 * hist2)))
 
-
-
         MemoryPTC_loss = MemoryPTC_loss*similarity
-
-        
         ctc_loss = CTC_loss(out_s, out_t, flags) 
-        
         cls_loss = F.multilabel_soft_margin_loss(cls, cls_label)
         cls_loss_aux = F.multilabel_soft_margin_loss(cls_aux, cls_label)
-
-       
         valid_cam, _ = cam_to_label(cams.detach(), cls_label=cls_label, img_box=img_box, ignore_mid=True, bkg_thre=args.bkg_thre, high_thre=args.high_thre, low_thre=args.low_thre, ignore_index=args.ignore_index)
-        
-       
         refined_pseudo_label = refine_cams_with_bkg_v2(par, inputs_denorm, cams=valid_cam, cls_labels=cls_label,  high_thre=args.high_thre, low_thre=args.low_thre, ignore_index=args.ignore_index, img_box=img_box)
         segs = F.interpolate(segs, size=refined_pseudo_label.shape[1:], mode='bilinear', align_corners=False)
         seg_loss = get_seg_loss(segs, refined_pseudo_label.type(torch.long), ignore_index=args.ignore_index)
         reg_loss = get_energy_loss(img=inputs, logit=segs, label=refined_pseudo_label, img_box=img_box, loss_layer=loss_layer) 
 
-
-       
         resized_cams_aux = F.interpolate(cams_aux, size=fmap.shape[2:], mode="bilinear", align_corners=False)
-        
-        
         
         _, pseudo_label_aux = cam_to_label(resized_cams_aux.detach(), cls_label=cls_label, img_box=img_box, ignore_mid=True, bkg_thre=args.bkg_thre, high_thre=args.high_thre, low_thre=args.low_thre, ignore_index=args.ignore_index)
         aff_mask = label_to_aff_mask(pseudo_label_aux)
         ptc_loss = get_masked_ptc_loss(fmap, aff_mask) 
      
-        
-        loss = 1.0 * cls_loss + 1.0 * cls_loss_aux + args.w_ptc * ptc_loss + args.w_ctc * ctc_loss + args.w_seg * seg_loss + args.w_reg * reg_loss +0.5*target_error_loss +0.5*MemoryPTC_loss
-
+        loss = 1.0 * cls_loss + 1.0 * cls_loss_aux + args.w_ptc * ptc_loss + args.w_ctc * ctc_loss + args.w_seg * seg_loss + args.w_reg * reg_loss +0.1*target_error_loss +0.5*MemoryPTC_loss
 
         cls_pred = (cls > 0).type(torch.int16)
         cls_score = evaluate.multilabel_score(cls_label.cpu().numpy()[0], cls_pred.cpu().numpy()[0])
 
-        
         avg_meter.add({
             'cls_score': cls_score.item(),
             'cls_loss': cls_loss.item(),
@@ -485,7 +425,6 @@ def train(args=None):
             'seg_loss': seg_loss.item(),
         })
 
-        
         optim.zero_grad()
         loss.backward()
        
@@ -530,7 +469,6 @@ if __name__ == "__main__":
         logging.info('Pytorch version: %s' % torch.__version__)
         logging.info("GPU type: %s"%(torch.cuda.get_device_name(0)))
         logging.info('\nargs: %s' % args)
-
     
     setup_seed(args.seed)
     train(args=args)
