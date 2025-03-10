@@ -23,8 +23,6 @@ parser.add_argument("--pooling", default='gmp', type=str, help="pooling choice f
 parser.add_argument("--data_folder", default='../VOCdevkit/VOC2012', type=str, help="dataset folder")
 parser.add_argument("--list_folder", default='datasets/voc', type=str, help="train/val/test list file")
 parser.add_argument("--num_classes", default=6, type=int, help="number of classes")
-# parser.add_argument("--num_classes", default=2, type=int, help="number of classes")
-# parser.add_argument("--num_classes", default=21, type=int, help="number of classes")
 parser.add_argument("--ignore_index", default=255, type=int, help="random index")
 parser.add_argument("--infer_set", default="val", type=str, help="infer_set")
 parser.add_argument("--cam_scales", default=(1.0, 1.25, 1.5), help="multi_scales for cam")

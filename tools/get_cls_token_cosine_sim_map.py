@@ -18,21 +18,20 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import evaluate, imutils
 from utils.camutils import cam_to_label, get_valid_cam, multi_scale_cam2, cam_to_roi_mask2
-# from utils.pyutils import AverageMeter, format_tabs
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--eval_set", default="train", type=str, help="eval_set")
 parser.add_argument("--bkg_score", default=0.5, type=float, help="work_dir")
 parser.add_argument("--alpha", default=0.5, type=float, help="alpha")
 parser.add_argument("--pooling", default="gmp", type=str, help="pooling method")
-parser.add_argument("--model_path", default="workdir_voc_final/2022-10-31-08-22-37-370565/checkpoints/model_iter_20000.pth", type=str, help="model_path")
+parser.add_argument("--model_path", default="workdir_voc_final/2024-10-31-08-22-37-370565/checkpoints/model_iter_20000.pth", type=str, help="model_path")
 
 parser.add_argument("--backbone", default='vit_base_patch16_224', type=str, help="vit_base_patch16_224")
 parser.add_argument("--data_folder", default='../VOCdevkit/VOC2012', type=str, help="dataset folder")
 parser.add_argument("--list_folder", default='datasets/voc', type=str, help="train/val/test list file")
 parser.add_argument("--num_classes", default=6, type=int, help="number of classes")
-# parser.add_argument("--num_classes", default=2, type=int, help="number of classes")
-# parser.add_argument("--num_classes", default=21, type=int, help="number of classes")
+
 parser.add_argument("--ignore_index", default=255, type=int, help="random index")
 
 parser.add_argument("--high_thre", default=0.7, type=float, help="high_bkg_score")
@@ -47,18 +46,16 @@ def crop_from_roi4(images, roi_mask=None, crop_num=8, crop_size=96):
     margin = crop_size//2
 
     for i1 in range(b):
-        # print(roi_mask.shape)
+ 
         roi_index = (roi_mask[:, margin:(h-margin), margin:(w-margin)] == 1).nonzero()
         if roi_index.shape[0]<crop_num:
-            # print(roi_index.shape[0])
+         
             roi_index = (roi_mask[:, margin:(h-margin), margin:(w-margin)] >= 0).nonzero() ## if NULL then random crop
         rand_index = torch.randperm(roi_index.shape[0])
         crop_index = roi_index[rand_index[:crop_num], :]
-        # print(crop_index)
+       
         for i2 in range(crop_num):
             h0, w0 = crop_index[i2, 1], crop_index[i2, 2] # centered at (h0, w0)
-            # print(crop_index[i2])
-            # print(images.shape)
             temp_crops[i1, i2, ...] = images[i1, :, h0:(h0+crop_size), w0:(w0+crop_size)]
 
     
@@ -90,8 +87,6 @@ def _validate(model=None, data_loader=None, args=None):
 
         for idx, data in tqdm(enumerate(data_loader), total=len(data_loader), ncols=100, ascii=" >="):
 
-            # if idx >=100:
-            #     break
 
             name, inputs, labels, cls_label = data
 
@@ -114,13 +109,7 @@ def _validate(model=None, data_loader=None, args=None):
             imageio.imsave(os.path.join(img_dir_g, name[0] + ".jpg"), img_g.astype(np.uint8))
 
             _, _, patch_token, _, attn, cls_token = model(inputs)
-            ###
-            # patch_token = F.normalize(patch_token, dim=1, p=2)
-            # cls_token = F.normalize(cls_token, dim=1, p=2)
-            # cls_token = cls_token.unsqueeze(1)
-            # sal_g = torch.einsum("abc,acde->abde", cls_token, patch_token)
-            # sal_g = torch.abs(sal_g)
-            ###
+        
             # pdb.set_trace()
             sal_g = attn[:, :, 0, 1:].reshape(1, 12, 28, 28)
             # pdb.set_trace()

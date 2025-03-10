@@ -28,10 +28,9 @@ parser.add_argument("--backbone", default='vit_base_patch16_224', type=str, help
 parser.add_argument("--pooling", default='gmp', type=str, help="pooling choice for patch tokens")
 parser.add_argument("--pretrained", default=True, type=bool, help="use imagenet pretrained weights")
 
-parser.add_argument("--data_folder", default='/home/newdisk/fty/LZ/MSFC/VOCdevkit/ISPRS6', type=str, help="dataset folder")
+parser.add_argument("--data_folder", default='../VOCdevkit/VOC2012', type=str, help="dataset folder")
 parser.add_argument("--list_folder", default='datasets/voc', type=str, help="train/val/test list file")
-# parser.add_argument("--num_classes", default=6, type=int, help="number of classes")
-# parser.add_argument("--num_classes", default=2, type=int, help="number of classes")
+
 parser.add_argument("--num_classes", default=21, type=int, help="number of classes")
 parser.add_argument("--ignore_index", default=255, type=int, help="random index")
 parser.add_argument("--infer_set", default="val", type=str, help="infer_set")
@@ -86,10 +85,10 @@ def _validate(model=None, data_loader=None, args=None):
             cam_aux_np = torch.max(resized_cam_aux[0], dim=0)[0].cpu().numpy()
 
 
-            # 新增
+            
             valid_label = torch.nonzero(cls_label[0])[:, 0]
             out_cam = torch.squeeze(resized_cam)[valid_label]
-            # print(out_cam.cpu().numpy().shape)
+   
             np.save(os.path.join(cam_logit_dir, name[0]+'.npy'), {"keys":valid_label.cpu().numpy(), "cam":out_cam.cpu().numpy()})
 
             cam_rgb = color_map(cam_np)[:,:,:3] * 255

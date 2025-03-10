@@ -1,4 +1,3 @@
-## 根据cam获取各个类的原型，组成memory bank
 import argparse
 import os
 import sys
@@ -13,7 +12,6 @@ import torch
 import torch.nn.functional as F
 from datasets import voc
 from model.model_seg_neg import network
-# from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import evaluate, imutils
@@ -82,10 +80,10 @@ def _validate(model=None, data_loader=None, args=None):
             cam_aux_np = torch.max(resized_cam_aux[0], dim=0)[0].cpu().numpy()
 
 
-            # 新增
+            
             valid_label = torch.nonzero(cls_label[0])[:, 0]
             out_cam = torch.squeeze(resized_cam)[valid_label]
-            # print(out_cam.cpu().numpy().shape)
+
             np.save(os.path.join(cam_logit_dir, name[0]+'.npy'), {"keys":valid_label.cpu().numpy(), "cam":out_cam.cpu().numpy()})
 
             cam_rgb = color_map(cam_np)[:,:,:3] * 255

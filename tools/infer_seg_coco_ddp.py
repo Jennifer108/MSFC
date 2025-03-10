@@ -20,13 +20,11 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel
 
 parser = argparse.ArgumentParser()
-# parser.add_argument("--model_path", default="workdir_coco_final/2022-10-31-14-28-55-573606/checkpoints/model_iter_80000.pth", type=str, help="model_path")
 parser.add_argument("--model_path", default="", type=str, help="model_path")
 parser.add_argument("--backbone", default='vit_base_patch16_224', type=str, help="vit_base_patch16_224")
 parser.add_argument("--pooling", default='gmp', type=str, help="pooling choice for patch tokens")
 
 parser.add_argument("--data_folder", default='/home/newdisk/fty/LZ/MSFC/MSCOCO/coco2014', type=str, help="dataset folder")
-# parser.add_argument("--img_folder", default='../coco2014', type=str, help="dataset folder")
 
 parser.add_argument("--label_folder", default='/home/newdisk/fty/LZ/MSFC/MSCOCO/SegmentationClass', type=str, help="dataset folder")
 parser.add_argument("--list_folder", default='/home/newdisk/fty/LZ/MSFC/datasets/coco/', type=str, help="train/val/test list file")
@@ -51,8 +49,7 @@ def _validate(pid, model=None, dataset=None, args=None):
         gts, seg_pred = [], []
 
         for idx, data in tqdm(enumerate(data_loader), total=len(data_loader), ncols=100, ascii=" >="):
-            # if idx >=1000:
-            #     break
+
             name, inputs, labels, cls_label = data
 
             inputs = inputs.cuda()

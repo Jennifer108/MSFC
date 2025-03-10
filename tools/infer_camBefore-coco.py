@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 from datasets import coco
 from model.model_seg_neg import network
-# from omegaconf import OmegaConf
+
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import evaluate, imutils
@@ -42,7 +42,6 @@ def _validate(model=None, data_loader=None, args=None):
 
     model.eval()
 
-    # base_dir = '/home/newdisk/fty/LZ/MSFC/results'
     base_dir = args.base_dir
     cam_dir = os.path.join(base_dir, "cam_img", args.infer_set)
     cam_aux_dir = os.path.join(base_dir, "cam_img_aux", args.infer_set)
@@ -102,15 +101,6 @@ def _validate(model=None, data_loader=None, args=None):
 
 def validate(args=None):
 
-    # val_dataset = voc.VOC12SegDataset(
-    #     root_dir=args.data_folder,
-    #     name_list_dir=args.list_folder,
-    #     split=args.infer_set,
-    #     stage='val',
-    #     aug=False,
-    #     ignore_index=args.ignore_index,
-    #     num_classes=args.num_classes,
-    # )
     val_dataset = coco.CocoSegDataset(
         img_dir=args.data_folder,
         label_dir=args.label_folder,

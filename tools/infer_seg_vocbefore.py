@@ -22,8 +22,7 @@ from utils.pyutils import format_tabs
 parser = argparse.ArgumentParser()
 parser.add_argument("--infer_set", default="val", type=str, help="infer_set")
 parser.add_argument("--pooling", default="gmp", type=str, help="pooling method")
-# parser.add_argument("--model_path", default="workdir_voc_final2/2022-11-04-01-50-48-441426/checkpoints/model_iter_20000.pth", type=str, help="model_path")
-parser.add_argument("--model_path", default="workdir_ablation_vitl-mmt/2022-11-08-21-09-54-870501/checkpoints/model_iter_20000.pth", type=str, help="model_path")
+parser.add_argument("--model_path", default="workdir_ablation_vitl-mmt/2024-11-08-21-09-54-870501/checkpoints/model_iter_20000.pth", type=str, help="model_path")
 
 parser.add_argument("--backbone", default='vit_base_patch16_224', type=str, help="vit_base_patch16_224")
 parser.add_argument("--data_folder", default='/home/newdisk/fty/LZ/MSFC/VOCdevkit/VOC2012', type=str, help="dataset folder")
@@ -61,7 +60,7 @@ def _validate(model=None, data_loader=None, args=None):
                 segs = model(inputs_cat,)[1]
                 segs = F.interpolate(segs, size=labels.shape[1:], mode='bilinear', align_corners=False)
 
-                # seg = torch.max(segs[:1,...], segs[1:,...].flip(-1))
+             
                 seg = segs[:1,...] + segs[1:,...].flip(-1)
 
                 seg_list.append(seg)
@@ -125,7 +124,7 @@ def crf_proc():
         prob = post_processor(image, prob)
         pred = np.argmax(prob, axis=0)
 
-        #print(pred.shape)
+
         imageio.imsave(args.segs_dir + "/" + name + ".png", np.squeeze(pred).astype(np.uint8))
         imageio.imsave(args.segs_rgb_dir + "/" + name + ".png", imutils.encode_cmap(np.squeeze(pred)).astype(np.uint8))
         return pred, label
@@ -172,8 +171,7 @@ def validate(args=None):
     for k, v in trained_state_dict.items():
         k = k.replace('module.', '')
         new_state_dict[k] = v
-    # new_state_dict.pop("conv.weight")
-    # new_state_dict.pop("aux_conv.weight")
+
 
     model.load_state_dict(state_dict=new_state_dict, strict=True)
     model.eval()

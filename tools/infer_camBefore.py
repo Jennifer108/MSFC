@@ -39,8 +39,6 @@ parser.add_argument("--base_dir", default="/home/newdisk/fty/LZ/MSFC/results", t
 def _validate(model=None, data_loader=None, args=None):
 
     model.eval()
-
-    # base_dir = '/home/newdisk/fty/LZ/MSFC/results'
     base_dir = args.base_dir
     cam_dir = os.path.join(base_dir, "cam_img", args.infer_set)
     cam_aux_dir = os.path.join(base_dir, "cam_img_aux", args.infer_set)

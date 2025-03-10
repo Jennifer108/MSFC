@@ -22,18 +22,10 @@ from utils.pyutils import format_tabs
 parser = argparse.ArgumentParser()
 parser.add_argument("--infer_set", default="val", type=str, help="infer_set")
 parser.add_argument("--pooling", default="gmp", type=str, help="pooling method")
-# parser.add_argument("--model_path", default="workdir_voc_final2/2022-11-04-01-50-48-441426/checkpoints/model_iter_20000.pth", type=str, help="model_path")
 parser.add_argument("--model_path", default="/home/newdisk/fty/LZ/MSFC/results/MSFC_deit-b_voc_20k.pth", type=str, help="model_path")
-
 parser.add_argument("--backbone", default='vit_base_patch16_224', type=str, help="vit_base_patch16_224")
-# parser.add_argument("--data_folder", default='/home/newdisk/fty/LZ/MSFC/VOCdevkit/ISPRS6', type=str, help="dataset folder")
-# parser.add_argument("--data_folder", default='/home/newdisk/fty/LZ/MSFC/VOCdevkit/ISPRS2', type=str, help="dataset folder")
 parser.add_argument("--data_folder", default='/home/newdisk/fty/LZ/MSFC/VOCdevkit/VOC2012', type=str, help="dataset folder")
-# parser.add_argument("--list_folder", default='datasets/ISPRS6', type=str, help="train/val/test list file")
-# parser.add_argument("--list_folder", default='datasets/ISPRS2', type=str, help="train/val/test list file")
 parser.add_argument("--list_folder", default='datasets/voc', type=str, help="train/val/test list file")
-# parser.add_argument("--num_classes", default=6, type=int, help="number of classes")
-# parser.add_argument("--num_classes", default=2, type=int, help="number of classes")
 parser.add_argument("--num_classes", default=21, type=int, help="number of classes")
 parser.add_argument("--ignore_index", default=255, type=int, help="random index")
 parser.add_argument("--scales", default=(1.0, 1.5, 1.25), help="multi_scales for seg")
@@ -132,7 +124,7 @@ def crf_proc():
         prob = post_processor(image, prob)
         pred = np.argmax(prob, axis=0)
 
-        #print(pred.shape)
+
         imageio.imsave(args.segs_dir + "/" + name + ".png", np.squeeze(pred).astype(np.uint8))
         imageio.imsave(args.segs_rgb_dir + "/" + name + ".png", imutils.encode_cmap(np.squeeze(pred)).astype(np.uint8))
         return pred, label
@@ -198,7 +190,6 @@ if __name__ == "__main__":
 
     # base_dir = args.model_path.split("checkpoints")[0]
     base_dir = args.base_dir
-    # base_dir = '/home/newdisk/fty/LZ/MSFC/results/'
     args.logits_dir = os.path.join(base_dir, "segs/logits", args.infer_set)
     args.segs_dir = os.path.join(base_dir, "segs/seg_preds", args.infer_set)
     args.segs_rgb_dir = os.path.join(base_dir, "segs/seg_preds_rgb", args.infer_set)

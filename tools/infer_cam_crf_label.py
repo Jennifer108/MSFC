@@ -107,17 +107,8 @@ def crf_proc(args):
         #####
         pred = pred_h.copy()
 
-        # pred[pred_h == 0] = 255
-        #修改为
-        # pred[pred_h == 0] = 0
-        # pred[(pred_h + pred_l) == 0] = 0
-        ####
-
         _pred = np.squeeze(pred).astype(np.uint8)
         _pred_cmap = encode_cmap(_pred)
-
-        # print(_pred.shape)
-        # print(label.shape)
 
         if args.save_label:
             imageio.imsave(crf_pred_path+'/'+name+'.png', _pred)
