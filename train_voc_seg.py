@@ -59,7 +59,7 @@ parser.add_argument("--work_dir", default="work_dir_voc_vit", type=str, help="wo
 parser.add_argument("--train_set", default="train_aug", type=str, help="training split")
 parser.add_argument("--val_set", default="val", type=str, help="validation split")
 
-parser.add_argument("--spg", default=1, type=int, help="samples_per_gpu")
+parser.add_argument("--spg", default=2, type=int, help="samples_per_gpu")
 parser.add_argument("--scales", default=(0.5, 2), help="random rescale in training")
 parser.add_argument("--optimizer", default='PolyWarmupAdamW', type=str, help="optimizer")
 parser.add_argument("--lr", default=6e-5, type=float, help="learning rate")
