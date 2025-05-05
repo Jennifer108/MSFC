@@ -215,18 +215,18 @@ def train(args=None):
 
     data_list = []
     for i in range(80):
-        file_path = f"/home/newdisk/fty/LZ/MSFC/MemoryBank/{i}.npy"
+        file_path = f"/data/fty/LZ/MSFC/MemoryBankCOCO/{i}.npy"
         data = np.load(file_path)
         data_list.append(data)
     ClassMemoryBank=np.vstack(data_list) 
     ClassMemoryBank = torch.from_numpy(ClassMemoryBank).to(device, non_blocking=True)  
 
-    trained_state_dict = torch.load('/home/newdisk/fty/LZ/MSFC/results/MSFC_deit-b_coco_80k.pth', map_location="cpu")
-    new_state_dict = OrderedDict()
-    for k, v in trained_state_dict.items(): 
-        k = k.replace('module.', '') 
-        new_state_dict[k] = v
-    model.load_state_dict(state_dict=new_state_dict, strict=False)
+    # trained_state_dict = torch.load('/home/newdisk/fty/LZ/MSFC/results/MSFC_deit-b_coco_80k.pth', map_location="cpu")
+    # new_state_dict = OrderedDict()
+    # for k, v in trained_state_dict.items(): 
+    #     k = k.replace('module.', '') 
+    #     new_state_dict[k] = v
+    # model.load_state_dict(state_dict=new_state_dict, strict=False)
 
     param_groups = model.get_param_groups()
     model.to(device)
@@ -274,6 +274,13 @@ def train(args=None):
     CTC_loss = CTCLoss_neg(ncrops=ncrops, temp=1.0).cuda()
 
     par = PAR(num_iter=10, dilations=[1,2,4,8,12,24],devicePAR=device).cuda()
+    
+    classNum=80  
+    protypeList = [[] for _ in range(classNum)]
+    initProtypeList = [[] for _ in range(classNum)]
+    MeanprotypeList = [None for _ in range(classNum)]
+    Iterindex=0
+
 
     for n_iter in range(args.max_iters):
 
@@ -332,9 +339,8 @@ def train(args=None):
         Pcam_label = cam_to_label(cams, cls_label, bkg_thre=args.bkg_thre)
         flattened_tensor = torch.flatten(Pcam_label)
         nonzero_elements = torch.unique(flattened_tensor[flattened_tensor != 0])
-        classNum=80  
-        protypeList = [[] for _ in range(classNum)]
-        MeanprotypeList = [None for _ in range(classNum)]
+        
+
         Pfmp=fmap
         ClassMemoryBankBefore=ClassMemoryBank
         for element in nonzero_elements:
@@ -345,11 +351,38 @@ def train(args=None):
                 Pfmp=Pfmp[0,:,:,:].unsqueeze(0)
                 protype=getFeatures(Pfmp,Pcam_labelNew)
                 protypeList[element.item()-1].append(protype)
+
+ 
+        # for init protype
+        # if n_iter >200:
+        #     for element in nonzero_elements:
+        #         Pcam_labelNew=Pcam_label.clone()
+        #         Pcam_labelNew[Pcam_label>-100]=0
+        #         Pcam_labelNew[Pcam_label==element.item()] = 1
+        #         Pcam_labelNew=Pcam_labelNew.unsqueeze(0)
+        #         Pfmp=Pfmp[0,:,:,:].unsqueeze(0)
+        #         protype=getFeatures(Pfmp,Pcam_labelNew)
+        #         initProtypeList[element.item()-1].append(protype)
+        #     temp=False
+        #     for index in range(len(initProtypeList)):
+        #         if len(initProtypeList[index]) == 0:
+        #             temp=True
+                
+        #     if temp is False:
+        #         for index in range(len(initProtypeList)):
+        #             concatenated_tensor = torch.cat(initProtypeList[index], dim=0)
+        #             average_tensor = torch.mean(concatenated_tensor, dim=0)
+        #             MeanprotypeList[index]=average_tensor
+
+        #         for index in range(len(MeanprotypeList)):
+        #             if MeanprotypeList[index] is not None:
+        #                 numpy_array = MeanprotypeList[index].cpu().numpy()
+        #                 np.save("/data/fty/LZ/MSFC/MemoryBankCOCO/"+str(index)+'.npy', numpy_array)
         
         if Iterindex==200:
             Iterindex=0
             for index in range(len(protypeList)):
-                if len(protypeList[index]) != 0:
+                if len(protypeList[index]) >= 4:
                     concatenated_tensor = torch.cat(protypeList[index], dim=0)
                     average_tensor = torch.mean(concatenated_tensor, dim=0)
                     m=0.1  
@@ -400,6 +433,10 @@ def train(args=None):
         aff_mask = label_to_aff_mask(pseudo_label_aux)
         ptc_loss = get_masked_ptc_loss(fmap, aff_mask)
         loss = 1.0 * cls_loss + 1.0 * cls_loss_aux + args.w_ptc * ptc_loss + args.w_ctc * ctc_loss +args.w_seg * seg_loss + args.w_reg * reg_loss + 0.1*target_error_loss + 0.5*MemoryPTC_loss
+       
+        # For init protype
+        # loss = 1.0 * cls_loss + 1.0 * cls_loss_aux + args.w_ptc * ptc_loss + args.w_ctc * ctc_loss +args.w_seg * seg_loss + args.w_reg * reg_loss + 0.1*target_error_loss
+             
         cls_pred = (cls > 0).type(torch.int16)
         cls_score = evaluate.multilabel_score(cls_label.cpu().numpy()[0], cls_pred.cpu().numpy()[0])
 
